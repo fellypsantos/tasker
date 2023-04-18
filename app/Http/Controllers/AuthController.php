@@ -28,4 +28,11 @@ class AuthController extends Controller
             return response()->json(['message' => $ex->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
+
+    public function getMe()
+    {
+        $user = auth()->user();
+
+        return response()->json($user);
+    }
 }
