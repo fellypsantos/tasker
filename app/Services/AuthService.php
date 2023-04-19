@@ -20,7 +20,7 @@ class AuthService
         $user = $this->authRepository->findUserByEmail($credentials['email']);
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            throw new ValidationException('Invalid credentials');
+            throw new ValidationException(null, 'Invalid credentials.');
         }
 
         $this->authRepository->revokeAllTokens($user);
