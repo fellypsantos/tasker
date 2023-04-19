@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Repositories\TaskRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
@@ -15,16 +16,16 @@ class TaskService
         $this->taskRepository = $taskRepository;
     }
 
-    public function getAll()
+    public function getAll(User $user)
     {
-        return $this->taskRepository->getAll();
+        return $user->tasks;
     }
 
     public function createNewTask(array $data)
     {
         $user = auth()->user();
 
-        $task = $this->taskRepository->findTaskByTitle($data['title']);
+        $task = $this->taskRepository->findTaskByTitle($data['title'], $user);
 
         if ($task) {
             throw new ValidationException(null, 'Task with same title already exists.');

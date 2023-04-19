@@ -12,7 +12,7 @@ class LoginTest extends TestCase
 {
     public function test_user_can_log_in_with_correct_credentials()
     {
-        $user = User::factory()->create(['email' => 'fellyp@user.com', 'password' => Hash::make('my-password')]);
+        $user = User::factory()->create(['email' => 'test@user.com', 'password' => Hash::make('my-password')]);
 
         $response = $this->postJson('login', ['email' => $user->email, 'password' => 'my-password']);
 
@@ -30,6 +30,15 @@ class LoginTest extends TestCase
         });
     }
 
+    public function test_user_can_access_restricted_route_when_logged_in()
+    {
+        $user = User::factory()->create(['email' => 'test@user.com', 'password' => Hash::make('my-password')])->first();
+
+        $response = $this->actingAs($user)->getJson('me');
+
+        $response->assertStatus(Response::HTTP_OK);
+    }
+
     public function test_user_cannot_log_in_with_wrong_credentials()
     {
         $user = User::factory()->create(['email' => 'fellyp@user.com', 'password' => Hash::make('my-password')]);
@@ -44,7 +53,7 @@ class LoginTest extends TestCase
 
             $json->has('message');
 
-            $json->where('message', 'The given data was invalid.');
+            $json->where('message', 'Invalid credentials.');
         });
     }
 

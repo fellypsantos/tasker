@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TaskStoreUpdateValidation;
 use App\Services\TaskService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,7 +20,9 @@ class TaskController extends Controller
 
     public function index()
     {
-        $tasks = $this->taskService->getAll();
+        $user = auth()->user();
+
+        $tasks = $this->taskService->getAll($user);
 
         return response()->json($tasks);
     }

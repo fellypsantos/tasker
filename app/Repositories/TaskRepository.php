@@ -14,12 +14,12 @@ class TaskRepository implements TaskRepositoryInterface
         return Task::all();
     }
 
-    public function findTaskById(int $id): ?Task
+    public function findTaskById(int $id, User $user): ?Task
     {
         return Task::find($id);
     }
 
-    public function findTaskByTitle(string $title): ?Task
+    public function findTaskByTitle(string $title, User $user): ?Task
     {
         $task = Task::where('title', $title)->first();
 
@@ -37,7 +37,7 @@ class TaskRepository implements TaskRepositoryInterface
         return $task;
     }
 
-    public function updateTaskInformation(array $updated_data, int $id): Task
+    public function updateTaskInformation(array $updated_data, int $id, User $user): Task
     {
         $task = Task::findOrFail($id);
 
@@ -46,7 +46,7 @@ class TaskRepository implements TaskRepositoryInterface
         return $task;
     }
 
-    public function deleteTask(int $id): bool
+    public function deleteTask(int $id, User $user): bool
     {
         $task = Task::findOrFail($id);
 
