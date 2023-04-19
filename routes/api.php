@@ -11,5 +11,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('me', [AuthController::class, 'getMe']);
 
-    Route::apiResource('tasks', TaskController::class);
+    Route::apiResource('tasks', TaskController::class)
+        ->only(['index', 'store'])
+        ->middleware('auth:sanctum');
+
+    Route::apiResource('tasks', TaskController::class)
+        ->except(['index', 'store'])
+        ->middleware('check.task.ownership');
 });
