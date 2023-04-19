@@ -25,7 +25,7 @@ class AuthController extends Controller
 
             return response()->json($response);
         } catch (ValidationException $ex) {
-            return response()->json(['message' => $ex->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['message' => $ex->response], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
