@@ -98,4 +98,17 @@ class LoginTest extends TestCase
             ]);
         });
     }
+
+    public function test_user_should_get_error_429_too_many_requets_when_fire_many_attemps_to_login()
+    {
+        $credentials = ['email' => 'flood@user.com', 'password' => 'dummypass123'];
+
+        for ($i = 0; $i < 80; $i++) {
+            $this->postJson('login', $credentials);
+        }
+
+        $response = $this->postJson('login', $credentials);
+
+        $response->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
+    }
 }
