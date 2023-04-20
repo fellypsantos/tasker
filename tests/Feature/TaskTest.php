@@ -128,4 +128,173 @@ class TaskTest extends TestCase
             ]);
         });
     }
+
+    public function test_user_cannot_create_new_task_with_missing_title()
+    {
+        $data = [];
+
+        $response = $this->actingAs($this->user)->postJson('tasks', $data);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        $response->assertJsonCount(2);
+
+        $response->assertJson(function (AssertableJson $json) {
+
+            $json->hasAll(['message', 'errors']);
+
+            $json->whereAll([
+                'message' => 'The given data was invalid.',
+                'errors.title.0' => 'The title field is required.'
+            ]);
+        });
+    }
+
+    public function test_user_cannot_create_new_task_if_not_logged_in()
+    {
+        $data = [];
+
+        $response = $this->postJson('tasks', $data);
+
+        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
+
+        $response->assertJsonCount(1);
+
+        $response->assertJson(function (AssertableJson $json) {
+
+            $json->has('message');
+
+            $json->where('message', 'Unauthenticated.');
+        });
+    }
+
+    public function test_user_can_update_task()
+    {
+        $task = Task::factory(1)->create(['user_id' => $this->user->id])->first();
+
+        $updated_data = [
+            'title' => $task->title,
+            'description' => $task->description,
+            'completed' => true
+        ];
+
+        $response = $this->actingAs($this->user)->putJson("tasks/{$task->id}", $updated_data);
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $response->assertJsonCount(7);
+
+        $response->assertJson(function (AssertableJson $json) use ($updated_data) {
+
+            $json->hasAll(['id', 'user_id', 'title', 'description', 'completed', 'created_at', 'updated_at']);
+
+            $json->whereAll([
+                'title' => $updated_data['title'],
+                'description' => $updated_data['description'],
+                'completed' => $updated_data['completed']
+            ]);
+        });
+    }
+
+    public function test_user_cannot_update_task_with_invalid_data()
+    {
+        $task = Task::factory(1)->create(['user_id' => $this->user->id])->first();
+
+        $updated_data = [];
+
+        $response = $this->actingAs($this->user)->putJson("tasks/{$task->id}", $updated_data);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        $response->assertJsonCount(2);
+
+        $response->assertJson(function (AssertableJson $json) {
+
+            $json->hasAll(['message', 'errors']);
+
+            $json->whereAll([
+                'message' => 'The given data was invalid.',
+                'errors.title.0' => 'The title field is required.'
+            ]);
+        });
+    }
+
+    public function test_user_cannot_update_task_when_not_logged_in()
+    {
+        $task = Task::factory(1)->create(['user_id' => $this->user->id])->first();
+
+        $updated_data = [
+            'title' => $task->title,
+            'description' => $task->description,
+            'completed' => true
+        ];
+
+        $response = $this->putJson("tasks/{$task->id}", $updated_data);
+
+        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
+
+        $response->assertJsonCount(1);
+
+        $response->assertJson(function (AssertableJson $json) {
+
+            $json->has('message');
+
+            $json->where('message', 'Unauthenticated.');
+        });
+    }
+
+    public function test_user_cannot_update_task_when_it_is_not_the_owner_or_not_exists()
+    {
+        $user2 = User::factory(1)->create(['name' => 'Second User'])->first();
+
+        $task_from_user2 = Task::factory(1)->create(['user_id' => $user2->id])->first();
+
+        $updated_data = [
+            'title' => $task_from_user2->title,
+            'description' => $task_from_user2->description,
+            'completed' => true
+        ];
+
+        $response = $this->actingAs($this->user)->putJson("tasks/{$task_from_user2->id}", $updated_data);
+
+        $response->assertStatus(Response::HTTP_NOT_FOUND);
+
+        $response->assertJsonCount(1);
+
+        $response->assertJson(function (AssertableJson $json) {
+
+            $json->has('message');
+
+            $json->where('message', 'Task not found.');
+        });
+    }
+
+    public function test_user_can_delete_a_task()
+    {
+        $task = Task::factory(1)->create(['user_id' => $this->user->id])->first();
+
+        $response = $this->actingAs($this->user)->delete("tasks/{$task->id}");
+
+        $response->assertStatus(Response::HTTP_NO_CONTENT);
+    }
+
+    public function test_user_cannot_delete_a_task_when_it_is_not_the_owner_or_not_exists()
+    {
+        $user2 = User::factory(1)->create(['name' => 'Second User'])->first();
+
+        $task_from_user2 = Task::factory(1)->create(['user_id' => $user2->id])->first();
+
+        $response = $this->actingAs($this->user)->delete("tasks/{$task_from_user2->id}");
+
+        $response->assertStatus(Response::HTTP_NOT_FOUND);
+
+        $response->assertJsonCount(1);
+
+        $response->assertJson(function (AssertableJson $json) {
+
+            $json->has('message');
+
+            $json->where('message', 'Task not found.');
+        });
+    }
 }
