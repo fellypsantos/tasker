@@ -11,9 +11,18 @@ class Task extends Model
 
     protected $fillable = ['title', 'description', 'completed'];
 
-    protected $casts = [
-        'completed' => 'boolean',
+    protected $casts = ['completed' => 'boolean'];
+
+    protected $attributes = [
+        'description' => '',
     ];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->attributes['completed'] = false;
+    }
 
     public function user()
     {
